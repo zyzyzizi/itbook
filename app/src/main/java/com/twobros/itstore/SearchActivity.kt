@@ -192,9 +192,6 @@ class SearchActivity : AppCompatActivity() {
         searchRvAdapter.notifyItemRemoved(searchRvAdapter.resultList.size)
     }
 
-
-
-
     class LoadingItem : IBook
 
     private val loadingItem: LoadingItem = LoadingItem()

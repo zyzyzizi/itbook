@@ -73,4 +73,6 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:4.3'
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestUtil 'androidx.test:orchestrator:1.4.1'
+
+    implementation 'androidx.cardview:cardview:1.0.0'
 }
