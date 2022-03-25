@@ -99,37 +99,39 @@ class SearchActivity : AppCompatActivity() {
         menuSearch = menu.findItem(R.id.menu_activity_search_query)
         searchView = (menuSearch.actionView as SearchView).apply {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                @SuppressLint("NotifyDataSetChanged")
+
                 override fun onQueryTextSubmit(query: String): Boolean {
                     Log.i(TAG, "onQueryTextSubmit:  $query")
-
-                    updateTitle(query)
-                    hideKeyboard()
-                    closeSearchView()
-                    searchRvAdapter.resultList.clear()
-                    searchRvAdapter.notifyDataSetChanged()
-
-                    val queries = Queries(query)
-
-                    if (queries.isValid) {
-                        searchViewModel.init(queries)
-                        searchViewModel.load()
-                        showProgress()
-                    } else {
-                        showErrorMessage(queries.error)
-                    }
-
+                    process(query)
                     return true
                 }
 
                 override fun onQueryTextChange(newText: String): Boolean {
-                    //todo
                     return false
                 }
             })
         }
         menuSearch.expandActionView()
         return true
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun process(query: String) {
+        updateTitle(query)
+        hideKeyboard()
+        closeSearchView()
+        searchRvAdapter.resultList.clear()
+        searchRvAdapter.notifyDataSetChanged()
+
+        val queries = Queries(query)
+
+        if (queries.isValid) {
+            searchViewModel.init(queries)
+            searchViewModel.load()
+            showProgress()
+        } else {
+            showErrorMessage(queries.error)
+        }
     }
 
 
@@ -180,7 +182,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun showBottomProgress() {
-        if (searchRvAdapter.resultList.get(searchRvAdapter.resultList.size - 1) is LoadingItem) {
+        if (searchRvAdapter.resultList[searchRvAdapter.resultList.size - 1] is LoadingItem) {
             return
         }
         searchRvAdapter.resultList.add(loadingItem)
@@ -199,8 +201,5 @@ class SearchActivity : AppCompatActivity() {
     companion object {
         private val TAG = "shk-${SearchActivity::class.java.simpleName}"
         private const val THREAD_HOLD = 5
-        private const val OP_OR = "|"
-        private const val OP_NOT = "-"
-        private val SPLIT_REG = "[|-]".toRegex()
     }
 }
