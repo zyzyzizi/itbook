@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.twobros.itstore"
-        minSdk 30
+        minSdk 28
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -33,6 +33,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -52,6 +58,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.4.1'
     implementation 'androidx.navigation:navigation-ui-ktx:2.4.1'
+    implementation 'androidx.test.ext:junit-ktx:1.1.3'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
     implementation 'androidx.core:core-ktx:1.7.0'
@@ -63,4 +70,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     testImplementation "io.mockk:mockk:1.12.3"
+    testImplementation 'org.robolectric:robolectric:4.3'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestUtil 'androidx.test:orchestrator:1.4.1'
 }

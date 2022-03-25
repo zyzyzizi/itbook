@@ -1,5 +1,6 @@
 package com.twobros.itstore
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -7,14 +8,18 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.twobros.itstore.databinding.SearchActivityBinding
+import com.twobros.itstore.repostory.BookStoreRepository
 import com.twobros.itstore.repostory.api.model.IBook
 import com.twobros.itstore.viewmodel.SearchViewModel
+import com.twobros.itstore.viewmodel.SearchViewModel.Companion.NUM_ITEM_IN_PAGE
+import com.twobros.itstore.viewmodel.SearchViewModelFactory
 
 class SearchActivity : AppCompatActivity() {
 
@@ -22,9 +27,14 @@ class SearchActivity : AppCompatActivity() {
 
     private lateinit var menuSearch: MenuItem
 
-    private lateinit var searchView: SearchView
+    private var searchView: SearchView? = null
 
-    private lateinit var searchViewModel: SearchViewModel
+    private val searchViewModel: SearchViewModel by lazy {
+        ViewModelProvider(
+            this,
+            SearchViewModelFactory(BookStoreRepository())
+        )[SearchViewModel::class.java]
+    }
 
     private val searchRvAdapter = SearchAdapter()
 
@@ -32,56 +42,82 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        searchViewModel = ViewModelProvider(this)[SearchViewModel::class.java]
-
         binding = DataBindingUtil.setContentView(this, R.layout.search_activity)
+
+        initRecyclerView()
+
+        observeData()
+    }
+
+    private fun observeData() {
+        searchViewModel.isLoading.observe(this) {
+            isLoading = it
+            if (!it) {
+                hideBottomProgress()
+            }
+        }
+        searchViewModel.bookLiveData.observe(this) { books ->
+            hideProgress()
+            val start = searchRvAdapter.resultList.size
+            searchRvAdapter.resultList.addAll(books)
+            searchRvAdapter.notifyItemRangeInserted(start, books.size)
+
+            if (searchRvAdapter.resultList.size < NUM_ITEM_IN_PAGE) {
+                searchViewModel.load()
+            }
+        }
+
+        searchViewModel.errorMessage.observe(this) {
+            if (it == null) {
+                hideErrorMessage()
+            } else {
+                showErrorMessage(it)
+            }
+        }
+    }
+
+    private fun initRecyclerView() {
         binding.resultListView.run {
             layoutManager = LinearLayoutManager(this@SearchActivity)
             adapter = searchRvAdapter
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-                    (layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
-                        .let { last ->
-                            // todo show loading and load more
-                            if (searchRvAdapter.resultList.size <= last + THREAD_HOLD && !isLoading) {
-                                showBottomProgress()
-                                searchViewModel.load()
-                            }
+                    val last = (layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                    if (searchRvAdapter.resultList.size <= last + THREAD_HOLD && !isLoading) {
+                        if (searchViewModel.load()){
+                            showBottomProgress()
                         }
+                    }
                 }
             })
         }
-        searchViewModel.isLoading.observe(this, {
-            isLoading = it
-            if (!it) {
-                hideBottomProgress()
-            }
-        })
-        searchViewModel.bookLiveData.observe(this, { books ->
-            hideProgress()
-            val start = searchRvAdapter.resultList.size
-            searchRvAdapter.resultList.addAll(books)
-            searchRvAdapter.notifyItemRangeInserted(start, books.size)
-        })
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
         menuSearch = menu.findItem(R.id.menu_activity_search_query)
         searchView = (menuSearch.actionView as SearchView).apply {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                @SuppressLint("NotifyDataSetChanged")
                 override fun onQueryTextSubmit(query: String): Boolean {
                     Log.i(TAG, "onQueryTextSubmit:  $query")
 
                     updateTitle(query)
                     hideKeyboard()
                     closeSearchView()
-//todo parse query
-                    searchViewModel.init(query)
-                    searchViewModel.load()
-                    showProgress()
+                    searchRvAdapter.resultList.clear()
+                    searchRvAdapter.notifyDataSetChanged()
+
+                    val queries = Queries(query)
+
+                    if (queries.isValid) {
+                        searchViewModel.init(queries)
+                        searchViewModel.load()
+                        showProgress()
+                    } else {
+                        showErrorMessage(queries.error)
+                    }
 
                     return true
                 }
@@ -95,6 +131,7 @@ class SearchActivity : AppCompatActivity() {
         menuSearch.expandActionView()
         return true
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.menu_activity_search_query) {
@@ -114,12 +151,13 @@ class SearchActivity : AppCompatActivity() {
 
     private fun hideKeyboard() {
         (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).run {
-            hideSoftInputFromWindow(searchView.windowToken, 0)
+            hideSoftInputFromWindow(searchView?.windowToken, 0)
         }
     }
 
     private fun showProgress() {
         binding.resultListView.visibility = View.GONE
+        binding.errorMessage.visibility = View.GONE
         binding.loadingProgress.visibility = View.VISIBLE
     }
 
@@ -128,12 +166,17 @@ class SearchActivity : AppCompatActivity() {
         binding.resultListView.visibility = View.VISIBLE
     }
 
-    private fun showErrorAndRetry() {
-
+    private fun showErrorMessage(msg: String) {
+        binding.loadingProgress.visibility = View.GONE
+        binding.resultListView.visibility = View.GONE
+        binding.errorMessage.apply {
+            visibility = View.VISIBLE
+            text = msg
+        }
     }
 
-    private fun hideErrorAndRetry() {
-
+    private fun hideErrorMessage() {
+        binding.errorMessage.visibility = View.GONE
     }
 
     private fun showBottomProgress() {
@@ -149,6 +192,9 @@ class SearchActivity : AppCompatActivity() {
         searchRvAdapter.notifyItemRemoved(searchRvAdapter.resultList.size)
     }
 
+
+
+
     class LoadingItem : IBook
 
     private val loadingItem: LoadingItem = LoadingItem()
@@ -156,5 +202,8 @@ class SearchActivity : AppCompatActivity() {
     companion object {
         private val TAG = "shk-${SearchActivity::class.java.simpleName}"
         private const val THREAD_HOLD = 5
+        private const val OP_OR = "|"
+        private const val OP_NOT = "-"
+        private val SPLIT_REG = "[|-]".toRegex()
     }
 }

@@ -3,9 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/github/itstore/app/src/main/res/layout/activity_book_detail.xml" value="0.14130434782608695" />
         <entry key="..\:/github/itstore/app/src/main/res/layout/activity_main.xml" value="0.16894630192502533" />
         <entry key="..\:/github/itstore/app/src/main/res/layout/detail_fragment.xml" value="0.275" />
         <entry key="..\:/github/itstore/app/src/main/res/layout/fragment_scrolling.xml" value="0.17603850050658562" />
+        <entry key="..\:/github/itstore/app/src/main/res/layout/item_view.xml" value="0.33" />
         <entry key="..\:/github/itstore/app/src/main/res/layout/loading_item.xml" value="0.20208333333333334" />
         <entry key="..\:/github/itstore/app/src/main/res/layout/result_item.xml" value="0.33" />
         <entry key="..\:/github/itstore/app/src/main/res/layout/search_activity.xml" value="0.21965579710144928" />

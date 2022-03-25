@@ -1,5 +1,6 @@
 package com.twobros.itstore
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.twobros.itstore.databinding.ResultItemBinding
 import com.twobros.itstore.repostory.api.model.Book
 import com.twobros.itstore.repostory.api.model.IBook
+import com.twobros.itstore.viewmodel.BookDetailViewModel
 
 class SearchAdapter : RecyclerView.Adapter<SearchItemViewHolder>() {
     var resultList = ArrayList<IBook>()
@@ -26,7 +28,7 @@ class SearchAdapter : RecyclerView.Adapter<SearchItemViewHolder>() {
         }
 
     override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
-        val item  = resultList.get(position)
+        val item  = resultList[position]
         if (item is Book) {
             DataBindingUtil.bind<ResultItemBinding>(holder.itemView)?.let { binding ->
                 Glide.with(binding.bookImage)
@@ -37,7 +39,13 @@ class SearchAdapter : RecyclerView.Adapter<SearchItemViewHolder>() {
                     .clearOnDetach()
                 binding.bookTitle.text = item.title
             }
-        } else {
+
+            holder.itemView.setOnClickListener {
+                val intent = Intent(it!!.context, BookDetailActivity::class.java).apply {
+                    putExtra(BookDetailViewModel.KEY_ISBN, item.isbn13)
+                }
+                it.context.startActivity(intent)
+            }
         }
 
     }
