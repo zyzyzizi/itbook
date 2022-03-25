@@ -3,8 +3,7 @@ package com.twobros.itstore
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 
-class SearchItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-}
+class SearchItemViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
 sealed class ViewType(val type: Int) {
     object RESULT : ViewType(0)
