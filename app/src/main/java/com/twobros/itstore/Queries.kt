@@ -1,7 +1,5 @@
 package com.twobros.itstore
 
-import androidx.annotation.VisibleForTesting
-
 class Queries(query: String) {
     sealed class OP(val ch: String) {
         object NA : OP("")
@@ -24,8 +22,6 @@ class Queries(query: String) {
             query2 = null
             op = OP.NA
         } else {
-
-
             if (tokens.size == 1) {
                 query1 = tokens[0].trim()
                 query2 = null
