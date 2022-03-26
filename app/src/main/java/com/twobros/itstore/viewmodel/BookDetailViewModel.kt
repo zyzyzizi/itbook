@@ -38,7 +38,6 @@ class BookDetailViewModel(
             errorMessage.postValue("Network is not available")
             return
         }
-        isLoading.value = true
         disposables.add(
             bookStoreRepository
                 .requestDetail(isbn13!!)
@@ -47,16 +46,8 @@ class BookDetailViewModel(
                 .subscribe(
                     { response ->
                         isLoading.value = false
-//                        if (response.isSuccessful && response.body() != null) {
-                            errorMessage.value = null
-                            bookInfoLiveData.value = response
-//                        } else {
-//                            Log.e(
-//                                TAG,
-//                                "load: onSuccess but failed: ${response.code()} | ${response.message()} "
-//                            )
-//                            errorMessage.value = "Error (${response.code()})"
-//                        }
+                        errorMessage.value = null
+                        bookInfoLiveData.value = response
                     },
                     { ex ->
                         Log.e(TAG, "load: onError: $ex | ${ex.message}")

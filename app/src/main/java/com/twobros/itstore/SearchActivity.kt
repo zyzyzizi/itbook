@@ -199,6 +199,6 @@ class SearchActivity : AppCompatActivity() {
 
     companion object {
         private val TAG = "shk-${SearchActivity::class.java.simpleName}"
-        private const val THREAD_HOLD = 5
+        private const val THREAD_HOLD = 3
     }
 }

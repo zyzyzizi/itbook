@@ -82,15 +82,14 @@ class SearchViewModel(
             return false
         }
 
-        isLoading.postValue(true)
-
         disposables.add(
             bookStoreRepository.search(currentQuery.query, currentQuery.loadedPages + 1)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { isLoading.postValue(true) }
+                .doOnTerminate { isLoading.postValue(false) }
                 .subscribe(
                     { response ->
-                        isLoading.value = false
                         if (!currentQuery.isQueried) {
                             currentQuery.isQueried = true
                             currentQuery.total = response.total.toInt()
@@ -113,7 +112,6 @@ class SearchViewModel(
                     },
                     { ex ->
                         Log.e(TAG, "load: onError: $ex | ${ex.message}")
-                        isLoading.value = false
                         errorMessage.value = "Error (${ex.message})"
                     }
                 ))
