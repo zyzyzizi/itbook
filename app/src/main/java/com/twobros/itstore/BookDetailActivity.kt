@@ -9,7 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.twobros.itstore.databinding.ActivityBookDetailBinding
-import com.twobros.itstore.repostory.BookStoreRepository
+import com.twobros.itstore.repostory.BookStoreRemoteRepository
 import com.twobros.itstore.viewmodel.BookDetailViewModel
 import com.twobros.itstore.viewmodel.BookDetailViewModelFactory
 
@@ -23,7 +23,7 @@ class BookDetailActivity : AppCompatActivity() {
 
         detailViewModel = ViewModelProvider(
             this,
-            BookDetailViewModelFactory(application, intent, BookStoreRepository())
+            BookDetailViewModelFactory(application, intent, BookStoreRemoteRepository())
         )[BookDetailViewModel::class.java]
 
         with(detailViewModel) {

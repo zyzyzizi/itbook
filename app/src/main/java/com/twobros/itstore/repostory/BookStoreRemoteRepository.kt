@@ -5,7 +5,7 @@ import com.twobros.itstore.repostory.api.model.BookInfo
 import com.twobros.itstore.repostory.api.model.SearchResult
 import io.reactivex.rxjava3.core.Single
 
-class BookStoreRepository : Repository {
+class BookStoreRemoteRepository : Repository {
     private val storeApi = BookStoreApiProvider.bookStoreRxApi
 
     override fun search(query: String): Single<SearchResult> {

@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.twobros.itstore.databinding.SearchActivityBinding
-import com.twobros.itstore.repostory.BookStoreRepository
+import com.twobros.itstore.repostory.BookStoreRemoteRepository
 import com.twobros.itstore.repostory.api.model.IBook
 import com.twobros.itstore.viewmodel.SearchViewModel
 import com.twobros.itstore.viewmodel.SearchViewModel.Companion.NUM_ITEM_IN_PAGE
@@ -31,7 +31,7 @@ class SearchActivity : AppCompatActivity() {
     private val searchViewModel: SearchViewModel by lazy {
         ViewModelProvider(
             this,
-            SearchViewModelFactory(application, BookStoreRepository())
+            SearchViewModelFactory(application, BookStoreRemoteRepository())
         )[SearchViewModel::class.java]
     }
 

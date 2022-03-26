@@ -3,7 +3,7 @@ package com.twobros.itstore
 import android.app.Application
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.twobros.itstore.repostory.BookStoreRepository
+import com.twobros.itstore.repostory.BookStoreRemoteRepository
 import com.twobros.itstore.repostory.api.model.Book
 import com.twobros.itstore.viewmodel.SearchViewModel
 import io.mockk.mockk
@@ -23,7 +23,7 @@ import org.robolectric.annotation.Config
 class SearchViewModelTest {
     private val mockApp: Application = mockk(relaxed = true)
 
-    private fun makeMockProvider(): BookStoreRepository {
+    private fun makeMockProvider(): BookStoreRemoteRepository {
         return mockk(relaxed = true)
     }
 
