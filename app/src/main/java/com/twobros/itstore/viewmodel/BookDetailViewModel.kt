@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.twobros.itstore.repostory.BookStoreRepository
+import com.twobros.itstore.repostory.Repository
 import com.twobros.itstore.repostory.api.model.BookInfo
 import com.twobros.itstore.util.isNetworkAvailable
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -18,7 +18,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 class BookDetailViewModel(
     application: Application,
     launchIntent: Intent,
-    private val bookStoreRepository: BookStoreRepository
+    private val bookStoreRepository: Repository
 ) : AndroidViewModel(application) {
     companion object {
         const val KEY_ISBN = "isbn"
@@ -41,22 +41,22 @@ class BookDetailViewModel(
         isLoading.value = true
         disposables.add(
             bookStoreRepository
-                .requestBookDetail(isbn13!!)
+                .requestDetail(isbn13!!)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { response ->
                         isLoading.value = false
-                        if (response.isSuccessful && response.body() != null) {
+//                        if (response.isSuccessful && response.body() != null) {
                             errorMessage.value = null
-                            bookInfoLiveData.value = response.body()
-                        } else {
-                            Log.e(
-                                TAG,
-                                "load: onSuccess but failed: ${response.code()} | ${response.message()} "
-                            )
-                            errorMessage.value = "Error (${response.code()})"
-                        }
+                            bookInfoLiveData.value = response
+//                        } else {
+//                            Log.e(
+//                                TAG,
+//                                "load: onSuccess but failed: ${response.code()} | ${response.message()} "
+//                            )
+//                            errorMessage.value = "Error (${response.code()})"
+//                        }
                     },
                     { ex ->
                         Log.e(TAG, "load: onError: $ex | ${ex.message}")

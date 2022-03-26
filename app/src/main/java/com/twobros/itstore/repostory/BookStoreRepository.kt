@@ -1,13 +1,22 @@
 package com.twobros.itstore.repostory
 
 import com.twobros.itstore.repostory.api.BookStoreApiProvider
+import com.twobros.itstore.repostory.api.model.BookInfo
+import com.twobros.itstore.repostory.api.model.SearchResult
+import io.reactivex.rxjava3.core.Single
 
-class BookStoreRepository {
+class BookStoreRepository : Repository {
     private val storeApi = BookStoreApiProvider.bookStoreRxApi
 
-    fun searchBook(bookTitle: String) = storeApi.search(bookTitle)
+    override fun search(query: String): Single<SearchResult> {
+        return storeApi.search(query)
+    }
 
-    fun searchBook(bookTitle: String, page: Int) = storeApi.search(bookTitle, page)
+    override fun search(query: String, page: Int): Single<SearchResult> {
+        return storeApi.search(query, page)
+    }
 
-    fun requestBookDetail(isbn: String) = storeApi.request(isbn)
+    override fun requestDetail(isbn13: String): Single<BookInfo> {
+        return storeApi.request(isbn13)
+    }
 }

@@ -8,7 +8,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.twobros.itstore.Queries
-import com.twobros.itstore.repostory.BookStoreRepository
+import com.twobros.itstore.repostory.Repository
 import com.twobros.itstore.repostory.api.model.Book
 import com.twobros.itstore.util.isNetworkAvailable
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -16,7 +16,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 class SearchViewModel(
-    application: Application, private val bookStoreRepository: BookStoreRepository
+    application: Application, private val bookStoreRepository: Repository
 ) : AndroidViewModel(application) {
     companion object {
         private val TAG = "shk-${SearchViewModel::class.java.simpleName}"
@@ -29,6 +29,7 @@ class SearchViewModel(
     val isLoading = MutableLiveData(false)
     val errorMessage = MutableLiveData<String?>()
     private val disposables = CompositeDisposable()
+
     @SuppressLint("StaticFieldLeak")
     private val context = application.applicationContext
 
@@ -70,7 +71,7 @@ class SearchViewModel(
     }
 
     fun load(): Boolean {
-        if (!isNetworkAvailable(context)){
+        if (!isNetworkAvailable(context)) {
             errorMessage.postValue("Network is not available")
             return false
         }
@@ -84,38 +85,30 @@ class SearchViewModel(
         isLoading.postValue(true)
 
         disposables.add(
-            bookStoreRepository.searchBook(currentQuery.query, currentQuery.loadedPages + 1)
+            bookStoreRepository.search(currentQuery.query, currentQuery.loadedPages + 1)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { response ->
                         isLoading.value = false
-                        if (response.isSuccessful && response.body() != null) {
-                            if (!currentQuery.isQueried) {
-                                currentQuery.isQueried = true
-                                currentQuery.total = response.body()?.total?.toInt() ?: 0
-                                currentQuery.totalPages = currentQuery.total / NUM_ITEM_IN_PAGE + 1
-                            }
+                        if (!currentQuery.isQueried) {
+                            currentQuery.isQueried = true
+                            currentQuery.total = response.total.toInt()
+                            currentQuery.totalPages = currentQuery.total / NUM_ITEM_IN_PAGE + 1
+                        }
 
-                            currentQuery.loadedPages = response.body()?.page?.toInt() ?: 0
+                        currentQuery.loadedPages = response.page.toInt()
 
 
-                            if (currentQuery.total == 0) {
-                                errorMessage.value = "Result: no data"
-                            } else {
-                                errorMessage.value = null
-                                updateResultList(response.body()!!.books)
-                                if (currentQuery.isFullLoaded() && queries?.op == Queries.OP.OR) {
-                                    queIdx = 1
-                                    load()
-                                }
-                            }
+                        if (currentQuery.total == 0) {
+                            errorMessage.value = "Result: no data"
                         } else {
-                            Log.e(
-                                TAG,
-                                "load: onSuccess but failed: ${response.code()} | ${response.message()}"
-                            )
-                            errorMessage.value = "Error (${response.code()})"
+                            errorMessage.value = null
+                            updateResultList(response.books)
+                            if (currentQuery.isFullLoaded() && queries?.op == Queries.OP.OR) {
+                                queIdx = 1
+                                load()
+                            }
                         }
                     },
                     { ex ->
