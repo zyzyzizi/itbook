@@ -8,7 +8,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
-import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -32,7 +31,7 @@ class SearchActivity : AppCompatActivity() {
     private val searchViewModel: SearchViewModel by lazy {
         ViewModelProvider(
             this,
-            SearchViewModelFactory(BookStoreRepository())
+            SearchViewModelFactory(application, BookStoreRepository())
         )[SearchViewModel::class.java]
     }
 

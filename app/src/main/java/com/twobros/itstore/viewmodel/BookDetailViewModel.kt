@@ -1,20 +1,25 @@
 package com.twobros.itstore.viewmodel
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Intent
 import android.util.Log
 import androidx.annotation.MainThread
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.twobros.itstore.repostory.BookStoreRepository
 import com.twobros.itstore.repostory.api.model.BookInfo
+import com.twobros.itstore.util.isNetworkAvailable
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
+@SuppressLint("StaticFieldLeak")
 class BookDetailViewModel(
+    application: Application,
     launchIntent: Intent,
     private val bookStoreRepository: BookStoreRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
     companion object {
         const val KEY_ISBN = "isbn"
         private val TAG = "shk-${BookDetailViewModel::class.java.simpleName}"
@@ -25,9 +30,14 @@ class BookDetailViewModel(
     val isLoading = MutableLiveData(false)
     val errorMessage = MutableLiveData<String?>()
     val bookInfoLiveData = MutableLiveData<BookInfo>()
+    private val context = application.applicationContext
 
     @MainThread
     fun load() {
+        if (!isNetworkAvailable(context)) {
+            errorMessage.postValue("Network is not available")
+            return
+        }
         isLoading.value = true
         disposables.add(
             bookStoreRepository
@@ -45,16 +55,15 @@ class BookDetailViewModel(
                                 TAG,
                                 "load: onSuccess but failed: ${response.code()} | ${response.message()} "
                             )
-                            errorMessage.value = "error (${response.code()})"
+                            errorMessage.value = "Error (${response.code()})"
                         }
                     },
                     { ex ->
                         Log.e(TAG, "load: onError: $ex | ${ex.message}")
                         isLoading.value = false
-                        errorMessage.value = "error (${ex.message}"
+                        errorMessage.value = "Error (${ex.message}"
                     }
                 )
-
         )
     }
 

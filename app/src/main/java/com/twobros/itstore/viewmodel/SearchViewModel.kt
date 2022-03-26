@@ -1,18 +1,23 @@
 package com.twobros.itstore.viewmodel
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.util.Log
 import androidx.annotation.MainThread
 import androidx.annotation.VisibleForTesting
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.twobros.itstore.Queries
 import com.twobros.itstore.repostory.BookStoreRepository
 import com.twobros.itstore.repostory.api.model.Book
+import com.twobros.itstore.util.isNetworkAvailable
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
-class SearchViewModel(private val bookStoreRepository: BookStoreRepository) : ViewModel() {
+class SearchViewModel(
+    application: Application, private val bookStoreRepository: BookStoreRepository
+) : AndroidViewModel(application) {
     companion object {
         private val TAG = "shk-${SearchViewModel::class.java.simpleName}"
         const val NUM_ITEM_IN_PAGE = 10
@@ -24,6 +29,8 @@ class SearchViewModel(private val bookStoreRepository: BookStoreRepository) : Vi
     val isLoading = MutableLiveData(false)
     val errorMessage = MutableLiveData<String?>()
     private val disposables = CompositeDisposable()
+    @SuppressLint("StaticFieldLeak")
+    private val context = application.applicationContext
 
     data class Query(val query: String) {
         var isQueried: Boolean = false
@@ -63,6 +70,10 @@ class SearchViewModel(private val bookStoreRepository: BookStoreRepository) : Vi
     }
 
     fun load(): Boolean {
+        if (!isNetworkAvailable(context)){
+            errorMessage.postValue("Network is not available")
+            return false
+        }
         val currentQuery = queryQue[queIdx]
 
         if (currentQuery.loadedPages != 0 && currentQuery.isFullLoaded()) {
@@ -104,13 +115,13 @@ class SearchViewModel(private val bookStoreRepository: BookStoreRepository) : Vi
                                 TAG,
                                 "load: onSuccess but failed: ${response.code()} | ${response.message()}"
                             )
-                            errorMessage.value = "error (${response.code()})"
+                            errorMessage.value = "Error (${response.code()})"
                         }
                     },
                     { ex ->
                         Log.e(TAG, "load: onError: $ex | ${ex.message}")
                         isLoading.value = false
-                        errorMessage.value = "error (${ex.message})"
+                        errorMessage.value = "Error (${ex.message})"
                     }
                 ))
 

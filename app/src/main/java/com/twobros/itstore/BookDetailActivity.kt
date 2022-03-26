@@ -23,10 +23,10 @@ class BookDetailActivity : AppCompatActivity() {
 
         detailViewModel = ViewModelProvider(
             this,
-            BookDetailViewModelFactory(intent, BookStoreRepository())
+            BookDetailViewModelFactory(application, intent, BookStoreRepository())
         )[BookDetailViewModel::class.java]
 
-        with(detailViewModel){
+        with(detailViewModel) {
             isLoading.observe(this@BookDetailActivity) {
                 with(binding) {
                     loadingProgress.visibility = View.VISIBLE
@@ -35,7 +35,7 @@ class BookDetailActivity : AppCompatActivity() {
                 }
             }
 
-            errorMessage.observe(this@BookDetailActivity){ msg ->
+            errorMessage.observe(this@BookDetailActivity) { msg ->
                 with(binding) {
                     loadingProgress.visibility = View.GONE
                     errorMessage.visibility = View.VISIBLE
